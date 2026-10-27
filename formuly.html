@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Формулы наизусть</title>
+<style>
+:root{
+  --paper:#f3f7fc; --grid:#d6e2f1; --ink:#1c2a52; --ink2:#53618a;
+  --red:#d3414a; --green:#1f8a63; --okbg:#ddf3e8; --badbg:#fde5e6; --card:#fff;
+  --serif:"Cambria Math","STIX Two Math","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font:17px/1.4 var(--sans); min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+main{max-width:480px;margin:0 auto;padding:18px 16px calc(24px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+sub,sup{line-height:0;font-size:.62em}
+h1{font:700 40px/1.05 var(--serif);margin:28px 0 8px;letter-spacing:-.01em}
+.lead{margin:0 0 22px;color:var(--ink2)}
+.seg{display:flex;border:2px solid var(--ink);border-radius:6px;background:var(--card);overflow:hidden;margin-bottom:18px}
+.seg button{flex:1;border:0;background:none;padding:11px 4px;font-weight:600}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.modes{display:grid;gap:10px}
+.mode{display:flex;align-items:center;gap:12px;text-align:left;width:100%;min-height:66px;
+  background:var(--card);border:2px solid var(--ink);border-radius:6px;padding:10px 14px}
+.mode:active{transform:translateY(1px)}
+.mode .t{display:block;font-weight:700}
+.mode .d{display:block;color:var(--ink2);font-size:14px}
+.mode .b{margin-left:auto;font:700 15px var(--serif);color:var(--ink2);white-space:nowrap}
+.links{display:flex;gap:10px;margin-top:18px}
+.link{flex:1;background:none;border:2px dashed var(--ink2);border-radius:6px;padding:11px;color:var(--ink);font-weight:600}
+.weak{margin-top:20px;padding:12px 14px;border-left:4px solid var(--red);background:rgba(255,255,255,.8)}
+.weak b{display:block;margin-bottom:2px}
+.weak span{font-family:var(--serif)}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.back{border:0;background:none;padding:8px 4px;font-weight:600;color:var(--ink2)}
+.ticks{display:flex;gap:4px;flex:1}
+.ticks i{flex:1;height:8px;border:1.5px solid var(--ink);border-radius:2px;background:#fff}
+.ticks i.ok{background:var(--green);border-color:var(--green)}
+.ticks i.bad{background:var(--red);border-color:var(--red)}
+.ticks i.cur{background:var(--ink)}
+.score{font:700 18px var(--serif);min-width:56px;text-align:right}
+.streak{font-size:13px;color:var(--ink2);text-align:right;min-height:18px;margin:-8px 0 8px}
+
+.prompt{position:relative;background:var(--card);border:2px solid var(--ink);border-radius:6px;
+  padding:16px 16px 18px 28px;margin-bottom:14px;min-height:118px}
+.prompt::before{content:"";position:absolute;left:14px;top:0;bottom:0;width:2px;background:var(--red)}
+.prompt .q{font-size:14px;color:var(--ink2);margin-bottom:6px}
+.prompt .big{font:700 28px/1.25 var(--serif);word-break:break-word}
+.prompt .big.f{font-size:34px;font-weight:400}
+.gap{display:inline-block;min-width:1.2em;padding:0 .2em;margin:0 1px;border-bottom:3px solid var(--red);
+  color:var(--red);text-align:center;font-weight:700}
+.gap.ok{color:var(--green);border-color:var(--green)}
+
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{min-height:60px;padding:10px 12px;background:var(--card);border:2px solid var(--ink);border-radius:6px;
+  font:400 23px/1.25 var(--serif);text-align:center;transition:background .12s}
+.opt.name{font:600 17px/1.25 var(--sans)}
+.opt.sym{font-size:30px;min-height:70px}
+.opt:not(:disabled):active{background:#e8eefa}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--okbg);border-color:var(--green)}
+.opt.wrong{background:var(--badbg);border-color:var(--red);color:var(--red);text-decoration:line-through;text-decoration-thickness:2px}
+.opt.dim{opacity:.45}
+
+.fb{margin-top:14px;padding:12px 14px;background:var(--card);border:2px solid var(--ink);border-radius:6px}
+.fb.ok{border-color:var(--green)} .fb.bad{border-color:var(--red)}
+.fb h3{margin:0 0 4px;font-size:17px}
+.fb.ok h3{color:var(--green)} .fb.bad h3{color:var(--red)}
+.fb .nm{color:var(--ink2);font-size:14px}
+.fb .fx{font:400 26px/1.3 var(--serif);margin:2px 0 6px}
+.fb p{margin:0;font-size:15px;color:var(--ink2)}
+.dock{position:sticky;bottom:0;padding:12px 0 2px;margin-top:6px}
+.go{width:100%;min-height:56px;background:var(--ink);color:#fff;border:0;border-radius:6px;font-weight:700;font-size:18px}
+.go.alt{background:var(--card);color:var(--ink);border:2px solid var(--ink)}
+
+.res h2{font:700 34px/1.1 var(--serif);margin:24px 0 4px}
+.res .sub{color:var(--ink2);margin:0 0 18px}
+.stats{display:flex;gap:10px;margin-bottom:18px}
+.stats div{flex:1;background:var(--card);border:2px solid var(--ink);border-radius:6px;padding:10px 12px}
+.stats b{display:block;font:700 28px var(--serif)}
+.stats span{font-size:13px;color:var(--ink2)}
+.miss{background:var(--card);border-left:4px solid var(--red);padding:10px 14px;margin-bottom:8px}
+.miss .nm{font-size:14px;color:var(--ink2)}
+.miss .fx{font:400 22px/1.3 var(--serif)}
+.btns{display:grid;gap:10px;margin-top:16px}
+
+.sheet h2{font:700 26px var(--serif);margin:22px 0 8px}
+.row{background:var(--card);border-bottom:1px solid var(--grid);padding:9px 14px;border-left:4px solid var(--ink)}
+.row .nm{font-size:14px;color:var(--ink2)}
+.row .fx{font:400 22px/1.3 var(--serif)}
+.row .nt{font-size:13px;color:var(--ink2)}
+.sig{text-align:center;font-size:12px;color:var(--ink2);padding:0 16px calc(18px + env(safe-area-inset-bottom))}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<footer class="sig">@QBIRS</footer>
+<script>
+/* ---------- данные ---------- */
+const F=[
+{id:'mkt',sec:'t',name:'Основное уравнение МКТ',f:'p = nkT',
+ fk:['p = nkT^{2}','p = nRT','p = kT/n'],
+ note:'p — давление, n — концентрация молекул, k — постоянная Больцмана, T — температура в кельвинах.'},
+{id:'mc',sec:'t',name:'Уравнение Менделеева–Клапейрона',f:'pV = (m/M)RT',
+ fk:['pV = (M/m)RT','pT = (m/M)RV','p = (m/M)RTV'],
+ note:'m — масса, M — молярная масса, R — газовая постоянная (8,31 Дж/(моль·К)).'},
+{id:'work',sec:'t',name:'Работа газа',f:'A = p·ΔV',
+ fk:['A = p/ΔV','A = V·Δp','A = p·ΔV^{2}'],
+ note:'Верно при постоянном давлении (изобарный процесс). ΔV — изменение объёма.'},
+{id:'iso',sec:'t',name:'Изотермический процесс',f:'pV = const',
+ fk:['p/V = const','p/T = const','pT = const'],
+ note:'T = const. Давление растёт — объём уменьшается (закон Бойля–Мариотта).'},
+{id:'du',sec:'t',name:'Изменение внутренней энергии',f:'ΔU = (3/2)·νRΔT',
+ fk:['ΔU = (2/3)·νRΔT','ΔU = 3·νRΔT','ΔU = (3/2)·νR/ΔT'],
+ note:'Для одноатомного идеального газа. ν — количество вещества.'},
+{id:'nu',sec:'t',name:'Количество вещества',f:'ν = m/M = N/N_{A}',
+ fk:['ν = M/m = N_{A}/N','ν = m·M = N·N_{A}','ν = m/M = N_{A}/N'],
+ note:'N — число молекул, N_A — число Авогадро (6,02·10²³ моль⁻¹).'},
+{id:'first',sec:'t',name:'Первое начало термодинамики',f:'Q = ΔU + A',
+ fk:['Q = ΔU − A','Q = ΔU·A','A = Q + ΔU'],
+ note:'Теплота идёт на изменение внутренней энергии и на работу газа.'},
+{id:'isob',sec:'t',name:'Изобарный процесс',f:'V/T = const',
+ fk:['p/T = const','V·T = const','pV = const'],
+ note:'p = const (закон Гей-Люссака). Объём пропорционален температуре.'},
+{id:'kpd',sec:'t',name:'КПД',f:'η = (Q_{1} − Q_{2})/Q_{1}·100%',
+ fk:['η = (Q_{1} − Q_{2})/Q_{2}·100%','η = (Q_{1} + Q_{2})/Q_{1}·100%','η = (Q_{1} − Q_{2})/Q_{1}'],
+ note:'Q₁ — тепло от нагревателя, Q₂ — отдано холодильнику. Без ·100% получится доля, а не проценты.'},
+{id:'heat',sec:'t',name:'Количество теплоты',f:'Q = c·m·Δt',
+ fk:['Q = c·Δt/m','Q = c·m/Δt','Q = m·Δt'],
+ note:'c — удельная теплоёмкость, m — масса, Δt — изменение температуры.'},
+
+{id:'newton',sec:'m',name:'Второй закон Ньютона',f:'F = ma',
+ fk:['F = m/a','F = ma^{2}','F = m·v'],
+ note:'Сила равна массе, умноженной на ускорение.'},
+{id:'kin',sec:'m',name:'Кинематика (путь)',f:'S = S_{0} + v_{0}t + at^{2}/2',
+ fk:['S = S_{0} + v_{0}t + at/2','S = S_{0} + v_{0}t + at^{2}','S = S_{0} + v_{0} + at^{2}/2'],
+ note:'Равноускоренное движение. S₀ — начальная координата, v₀ — начальная скорость.'},
+{id:'grav',sec:'m',name:'Всемирное тяготение',f:'F = G·m_{1}m_{2}/R^{2}',
+ fk:['F = G·m_{1}m_{2}/R','F = G·(m_{1} + m_{2})/R^{2}','F = G·m_{1}m_{2}·R^{2}'],
+ note:'G — гравитационная постоянная, R — расстояние между центрами тел.'},
+{id:'spring',sec:'m',name:'Сила упругости',f:'F_{упр} = −k·Δx',
+ fk:['F_{упр} = k·Δx^{2}','F_{упр} = −k/Δx','F_{упр} = −m·Δx'],
+ note:'Закон Гука. k — жёсткость, минус: сила направлена против деформации.'},
+{id:'ek',sec:'m',name:'Кинетическая энергия',f:'E_{к} = mv^{2}/2',
+ fk:['E_{к} = m^{2}v/2','E_{к} = mv/2','E_{к} = mv^{2}'],
+ note:'Скорость в квадрате, делим на 2.'},
+{id:'pow',sec:'m',name:'Мощность',f:'P = A/t',
+ fk:['P = A·t','P = t/A','P = F·t'],
+ note:'Работа за единицу времени.'},
+{id:'imp',sec:'m',name:'Импульс тела',f:'p = m·v',
+ fk:['p = m/v','p = m·a','p = m·v^{2}'],
+ note:'Масса, умноженная на скорость.'},
+{id:'acc',sec:'m',name:'Ускорение',f:'a = (v − v_{0})/Δt',
+ fk:['a = (v + v_{0})/Δt','a = (v − v_{0})·Δt','a = (v − v_{0})/Δt^{2}'],
+ note:'Изменение скорости за время Δt.'},
+{id:'cen',sec:'m',name:'Центростремительное ускорение',f:'a_{ц} = v^{2}/R',
+ fk:['a_{ц} = v/R^{2}','a_{ц} = v·R^{2}','a_{ц} = v^{2}·R'],
+ note:'R — радиус окружности. Направлено к центру.'},
+{id:'dens',sec:'m',name:'Плотность',f:'ρ = m/V',
+ fk:['ρ = V/m','ρ = m·V','ρ = m/V^{2}'],
+ note:'Масса, делённая на объём.'}
+];
+const MODES=[
+ {id:'f',t:'Формула по названию',d:'Назван закон — выбери формулу'},
+ {id:'n',t:'Название по формуле',d:'Дана формула — выбери, что это'},
+ {id:'b',t:'Пропущенный символ',d:'В формуле дыра — вставь недостающее'},
+ {id:'x',t:'Микс',d:'Все три вида вперемешку'}
+];
+const SEC={all:'Всё',t:'Термодинамика',m:'Механика'};
+const N=10;
+
+/* ---------- утилиты ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fm=s=>esc(s).replace(/_\{(.*?)\}/g,'<sub>$1</sub>').replace(/\^\{(.*?)\}/g,'<sup>$1</sup>');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const byId=id=>F.find(x=>x.id===id);
+
+let store={};
+try{store=JSON.parse(localStorage.getItem('formuly')||'{}')}catch(e){}
+store.st=store.st||{}; store.best=store.best||{};
+const save=()=>{try{localStorage.setItem('formuly',JSON.stringify(store))}catch(e){}};
+
+/* ---------- токены для режима «пропуск» ---------- */
+const RX=/const|[A-Za-zА-Яа-яνηρ](?:_\{[^}]*\})?|\^\{[^}]*\}|\d+|\s+|[\s\S]/g;
+function tokens(s){
+  return (s.match(RX)||[]).map(t=>{
+    let k='x';
+    if(t==='const')k='x';
+    else if(/^[A-Za-zА-Яа-яνηρ]/.test(t))k='v';
+    else if(t[0]==='^')k='e';
+    else if(/^\d+$/.test(t))k='d';
+    else if(t.length===1&&'+−·/'.includes(t))k='o';
+    return {t,k};
+  });
+}
+const VARS=[...new Set(F.flatMap(x=>tokens(x.f)).filter(z=>z.k==='v').map(z=>z.t))];
+const POOL={d:['1','2','3','4','100'],e:['^{2}','^{3}','^{-1}','^{1/2}'],o:['+','−','·','/']};
+
+/* ---------- генерация вопросов ---------- */
+function qF(it){
+  return {kind:'f',label:'Выбери формулу',big:esc(it.name),bigCls:'',cls:'',it,
+    opts:shuffle([it.f,...it.fk]).map(s=>({h:fm(s),ok:s===it.f}))};
+}
+function qN(it){
+  const same=shuffle(F.filter(x=>x.id!==it.id&&x.sec===it.sec)).slice(0,3);
+  return {kind:'n',label:'Как называется эта формула?',big:fm(it.f),bigCls:'f',cls:'name',it,
+    opts:shuffle([it,...same]).map(x=>({h:esc(x.name),ok:x.id===it.id}))};
+}
+function qB(it){
+  const tk=tokens(it.f);
+  const cand=tk.map((z,i)=>z.k!=='x'&&z.k!==' '?i:-1).filter(i=>i>=0);
+  const hi=cand[Math.floor(Math.random()*cand.length)];
+  const ans=tk[hi];
+  let wrong;
+  if(ans.k==='v'){
+    const near=shuffle([...new Set(tk.filter(z=>z.k==='v'&&z.t!==ans.t).map(z=>z.t))]).slice(0,2);
+    const rest=shuffle(VARS.filter(v=>v!==ans.t&&!near.includes(v)));
+    wrong=[...near,...rest].slice(0,3);
+  }else{
+    wrong=shuffle(POOL[ans.k].filter(v=>v!==ans.t)).slice(0,3);
+  }
+  const big=tk.map((z,i)=>i===hi?'<span class="gap" id="gap">?</span>':fm(z.t)).join('');
+  return {kind:'b',label:'Что пропущено?',big,bigCls:'f',cls:'sym two',it,ans:fm(ans.t),
+    opts:shuffle([ans.t,...wrong]).map(s=>({h:fm(s),ok:s===ans.t}))};
+}
+const MK={f:qF,n:qN,b:qB};
+function make(it,mode){
+  const m=mode==='x'?['f','n','b'][Math.floor(Math.random()*3)]:mode;
+  return MK[m](it);
+}
+function pick(ids,n){
+  const pool=ids.map(id=>{
+    const s=store.st[id]||{ok:0,bad:0};
+    return {id,w:Math.max(.3,1+2*s.bad-.5*s.ok)};
+  });
+  const out=[];
+  while(out.length<n&&pool.length){
+    const tot=pool.reduce((a,p)=>a+p.w,0);
+    let r=Math.random()*tot,i=0;
+    for(;i<pool.length-1;i++){r-=pool[i].w;if(r<=0)break}
+    out.push(pool.splice(i,1)[0].id);
+  }
+  return out;
+}
+
+/* ---------- состояние ---------- */
+const S={screen:'home',sec:'all',mode:'x',qs:[],i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]};
+
+function start(mode,ids){
+  S.mode=mode;
+  const pool=ids||F.filter(x=>S.sec==='all'||x.sec===S.sec).map(x=>x.id);
+  S.qs=shuffle(pick(pool,Math.min(N,pool.length))).map(id=>make(byId(id),mode));
+  Object.assign(S,{screen:'quiz',i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]});
+  render();
+}
+function answer(k){
+  if(S.ans!==null)return;
+  const q=S.qs[S.i], good=q.opts[k].ok, st=store.st[q.it.id]=store.st[q.it.id]||{ok:0,bad:0};
+  S.ans=k;
+  if(good){S.ok++;S.streak++;S.score+=10+2*Math.min(S.streak-1,4);st.ok++}
+  else{S.streak=0;st.bad++;S.miss.push(q.it.id)}
+  S.marks[S.i]=good;
+  save(); render();
+}
+function next(){
+  if(S.i+1>=S.qs.length){
+    const b=store.best[S.mode]||0; if(S.score>b)store.best[S.mode]=S.score; save();
+    S.screen='result';
+  }else{S.i++;S.ans=null}
+  render(); window.scrollTo(0,0);
+}
+
+/* ---------- экраны ---------- */
+function home(){
+  const bad=Object.entries(store.st).filter(([,v])=>v.bad>0).sort((a,b)=>b[1].bad-a[1].bad).slice(0,3).map(([id])=>byId(id));
+  return `
+  <h1>Формулы наизусть</h1>
+  <p class="lead">Физика: термодинамика и механика. Раунд — ${N} вопросов.</p>
+  <div class="seg" role="group" aria-label="Раздел">
+    ${Object.entries(SEC).map(([k,v])=>`<button data-act="sec" data-v="${k}" aria-pressed="${S.sec===k}">${v}</button>`).join('')}
+  </div>
+  <div class="modes">
+    ${MODES.map(m=>`<button class="mode" data-act="play" data-v="${m.id}">
+      <span><span class="t">${m.t}</span><span class="d">${m.d}</span></span>
+      <span class="b">${store.best[m.id]?'рекорд '+store.best[m.id]:''}</span></button>`).join('')}
+  </div>
+  <div class="links"><button class="link" data-act="sheet">Шпаргалка</button></div>
+  ${bad.length?`<div class="weak"><b>Чаще всего ошибаешься</b>${bad.map(x=>`<span>${fm(x.f)}</span>`).join('<br>')}</div>`:''}`;
+}
+function quiz(){
+  const q=S.qs[S.i], a=S.ans, done=a!==null;
+  const ticks=S.qs.map((_,i)=>`<i class="${i<S.i||(i===S.i&&done)?(S.marks[i]?'ok':'bad'):i===S.i?'cur':''}"></i>`).join('');
+  const opts=q.opts.map((o,k)=>{
+    let c='opt '+q.cls;
+    if(done){ if(o.ok)c+=' right'; else if(k===a)c+=' wrong'; else c+=' dim'; }
+    return `<button class="${c}" data-act="ans" data-v="${k}" ${done?'disabled':''}>${o.h}</button>`;
+  }).join('');
+  let fb='';
+  if(done){
+    const good=q.opts[a].ok;
+    fb=`<div class="fb ${good?'ok':'bad'}" role="status">
+      <h3>${good?'Верно':'Не так. Правильно:'}</h3>
+      <div class="nm">${esc(q.it.name)}</div>
+      <div class="fx">${fm(q.it.f)}</div>
+      <p>${esc(q.it.note)}</p></div>
+      <div class="dock"><button class="go" data-act="next">${S.i+1>=S.qs.length?'Результат':'Дальше'}</button></div>`;
+  }
+  return `
+  <div class="top"><button class="back" data-act="home">Выйти</button><div class="ticks">${ticks}</div><div class="score">${S.score}</div></div>
+  <div class="streak">${S.streak>1?'Серия: '+S.streak:''}</div>
+  <div class="prompt"><div class="q">${q.label}</div><div class="big ${q.bigCls}">${done&&q.kind==='b'?q.big.replace('<span class="gap" id="gap">?</span>',`<span class="gap ok">${q.ans}</span>`):q.big}</div></div>
+  <div class="opts ${q.cls.includes('two')?'two':''}">${opts}</div>${fb}`;
+}
+function result(){
+  const n=S.qs.length, pct=Math.round(S.ok/n*100);
+  const msg=pct===100?'Без единой ошибки.':pct>=80?'Почти всё помнишь.':pct>=50?'Неплохо, но ошибки стоит разобрать.':'Ещё раз пройди шпаргалку и повтори.';
+  const miss=[...new Set(S.miss)].map(byId);
+  return `<div class="res">
+  <h2>${S.ok} из ${n}</h2><p class="sub">${msg}</p>
+  <div class="stats"><div><b>${S.score}</b><span>очков</span></div><div><b>${pct}%</b><span>верно</span></div></div>
+  ${miss.length?`<b>Ошибки</b><div style="margin-top:8px">${miss.map(x=>`<div class="miss"><div class="nm">${esc(x.name)}</div><div class="fx">${fm(x.f)}</div></div>`).join('')}</div>`:''}
+  <div class="btns">
+    ${miss.length?`<button class="go" data-act="retry">Повторить ошибки</button>`:''}
+    <button class="go ${miss.length?'alt':''}" data-act="play" data-v="${S.mode}">Ещё раунд</button>
+    <button class="go alt" data-act="home">В меню</button>
+  </div></div>`;
+}
+function sheet(){
+  const grp=(k,t)=>`<h2>${t}</h2>`+F.filter(x=>x.sec===k).map(x=>`<div class="row">
+    <div class="nm">${esc(x.name)}</div><div class="fx">${fm(x.f)}</div><div class="nt">${esc(x.note)}</div></div>`).join('');
+  return `<div class="top"><button class="back" data-act="home">Назад</button></div>
+  <div class="sheet">${grp('t','Термодинамика')}${grp('m','Механика')}</div>`;
+}
+function render(){
+  $('#app').innerHTML=({home,quiz,result,sheet})[S.screen]();
+}
+
+/* ---------- события ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b)return;
+  const a=b.dataset.act,v=b.dataset.v;
+  if(a==='sec'){S.sec=v;render()}
+  else if(a==='play')start(v);
+  else if(a==='ans')answer(+v);
+  else if(a==='next')next();
+  else if(a==='retry')start(S.mode,[...new Set(S.miss)]);
+  else if(a==='sheet'){S.screen='sheet';render();window.scrollTo(0,0)}
+  else if(a==='home'){S.screen='home';render();window.scrollTo(0,0)}
+});
+render();
+</script>
+</body>
+</html>
