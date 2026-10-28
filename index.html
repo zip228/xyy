@@ -174,11 +174,39 @@ const F=[
  fk:['ρ = V/m','ρ = m·V','ρ = m/V^{2}'],
  note:'Масса, делённая на объём.'}
 ];
+const U=[
+{id:'p',sec:'t',name:'Давление',sym:'p',u:'Па',fk:['Н','Дж','Н·м'],note:'1 Па = 1 Н/м².'},
+{id:'n',sec:'t',name:'Концентрация молекул',sym:'n',u:'м^{-3}',fk:['моль','кг/м^{3}','м^{3}'],note:'Число молекул в одном кубическом метре.'},
+{id:'T',sec:'t',name:'Абсолютная температура',sym:'T',u:'К',fk:['°C','Дж','моль'],note:'Кельвины. T = t + 273.'},
+{id:'V',sec:'t',name:'Объём',sym:'V',u:'м^{3}',fk:['м^{2}','м','кг/м^{3}'],note:'1 л = 10⁻³ м³.'},
+{id:'A',sec:'t',name:'Работа',sym:'A',u:'Дж',fk:['Вт','Н','Па'],note:'1 Дж = 1 Н·м.'},
+{id:'M',sec:'t',name:'Молярная масса',sym:'M',u:'кг/моль',fk:['г','моль','кг/м^{3}'],note:'В СИ — кг/моль (в таблице Менделеева — г/моль).'},
+{id:'nu',sec:'t',name:'Количество вещества',sym:'ν',u:'моль',fk:['кг','м^{-3}','Дж/К'],note:'В одном моле N_A молекул.'},
+{id:'Q',sec:'t',name:'Количество теплоты',sym:'Q',u:'Дж',fk:['Вт','Дж/К','Н'],note:'Тепло измеряют в тех же единицах, что и работу.'},
+{id:'c',sec:'t',name:'Удельная теплоёмкость',sym:'c',u:'Дж/(кг·°C)',fk:['Дж/°C','Дж·кг/°C','Дж/кг'],note:'Сколько тепла нужно, чтобы нагреть 1 кг на 1 °C.'},
+{id:'R',sec:'t',name:'Газовая постоянная',sym:'R',u:'Дж/(моль·К)',fk:['Дж/К','Дж·моль/К','Н/(моль·К)'],note:'R ≈ 8,31 Дж/(моль·К).'},
+{id:'kb',sec:'t',name:'Постоянная Больцмана',sym:'k',u:'Дж/К',fk:['Дж·К','Дж/(моль·К)','К/Дж'],note:'k = R/N_A ≈ 1,38·10⁻²³ Дж/К.'},
+{id:'na',sec:'t',name:'Число Авогадро',sym:'N_{A}',u:'моль^{-1}',fk:['моль','кг/моль','м^{-3}'],note:'N_A ≈ 6,02·10²³ моль⁻¹.'},
+{id:'eta',sec:'t',name:'КПД',sym:'η',u:'%',fk:['Дж','Вт','Дж/К'],note:'После умножения на 100% получаем проценты. Без этого КПД — доля без единиц.'},
+{id:'m',sec:'m',name:'Масса',sym:'m',u:'кг',fk:['Н','моль','кг/м^{3}'],note:'Основная единица СИ.'},
+{id:'F',sec:'m',name:'Сила',sym:'F',u:'Н',fk:['Дж','Па','Вт'],note:'1 Н = 1 кг·м/с².'},
+{id:'a',sec:'m',name:'Ускорение',sym:'a',u:'м/с^{2}',fk:['м/с','м·с^{2}','м^{2}/с'],note:'На сколько м/с меняется скорость за 1 секунду.'},
+{id:'v',sec:'m',name:'Скорость',sym:'v',u:'м/с',fk:['м/с^{2}','м·с','Н·с'],note:'36 км/ч = 10 м/с.'},
+{id:'S',sec:'m',name:'Путь',sym:'S',u:'м',fk:['м^{2}','м/с','с'],note:'Основная единица СИ.'},
+{id:'t',sec:'m',name:'Время',sym:'t',u:'с',fk:['Гц','м/с','кг'],note:'Основная единица СИ.'},
+{id:'P',sec:'m',name:'Мощность',sym:'P',u:'Вт',fk:['Дж','Н','Дж·с'],note:'1 Вт = 1 Дж/с.'},
+{id:'imp',sec:'m',name:'Импульс тела',sym:'p',u:'кг·м/с',fk:['кг·м/с^{2}','кг/м','Н·м'],note:'То же самое, что Н·с.'},
+{id:'rho',sec:'m',name:'Плотность',sym:'ρ',u:'кг/м^{3}',fk:['кг·м^{3}','м^{3}/кг','кг/м^{2}'],note:'Вода: 1000 кг/м³.'},
+{id:'kp',sec:'m',name:'Жёсткость пружины',sym:'k',u:'Н/м',fk:['Н·м','Н/м^{2}','м/Н'],note:'Сколько Н нужно, чтобы растянуть пружину на 1 м.'},
+{id:'G',sec:'m',name:'Гравитационная постоянная',sym:'G',u:'Н·м^{2}/кг^{2}',fk:['Н·кг^{2}/м^{2}','Н/кг^{2}','Н·м/кг'],note:'G ≈ 6,67·10⁻¹¹ Н·м²/кг².'},
+{id:'ek',sec:'m',name:'Кинетическая энергия',sym:'E_{к}',u:'Дж',fk:['Вт','Н','кг·м/с'],note:'Энергия измеряется в джоулях, как и работа.'}
+];
 const MODES=[
  {id:'f',t:'Формула по названию',d:'Назван закон — выбери формулу'},
  {id:'n',t:'Название по формуле',d:'Дана формула — выбери, что это'},
  {id:'b',t:'Пропущенный символ',d:'В формуле дыра — вставь недостающее'},
- {id:'x',t:'Микс',d:'Все три вида вперемешку'}
+ {id:'u',t:'Единицы измерения',d:'В чём измеряется величина'},
+ {id:'x',t:'Микс',d:'Формулы и единицы вперемешку'}
 ];
 const SEC={all:'Всё',t:'Термодинамика',m:'Механика'};
 const N=10;
@@ -189,6 +217,10 @@ const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const fm=s=>esc(s).replace(/_\{(.*?)\}/g,'<sub>$1</sub>').replace(/\^\{(.*?)\}/g,'<sup>$1</sup>');
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const byId=id=>F.find(x=>x.id===id);
+function refOf(k){
+  if(k.startsWith('u:')){const x=U.find(z=>'u:'+z.id===k);return x&&{name:x.name+' ('+x.sym+')',f:x.u,note:x.note,short:x.sym+' — '+x.u};}
+  const it=byId(k);return it&&{name:it.name,f:it.f,note:it.note,short:it.f};
+}
 
 let store={};
 try{store=JSON.parse(localStorage.getItem('formuly')||'{}')}catch(e){}
@@ -238,10 +270,22 @@ function qB(it){
   return {kind:'b',label:'Что пропущено?',big,bigCls:'f',cls:'sym two',it,ans:fm(ans.t),
     opts:shuffle([ans.t,...wrong]).map(s=>({h:fm(s),ok:s===ans.t}))};
 }
+function qU(x){
+  const key='u:'+x.id, ref=refOf(key);
+  if(Math.random()<.5){
+    return {kind:'u',label:'В каких единицах измеряется?',big:esc(x.name)+', '+fm(x.sym),bigCls:'',cls:'two',key,ref,
+      opts:shuffle([x.u,...x.fk]).map(s=>({h:fm(s),ok:s===x.u}))};
+  }
+  const others=shuffle(U.filter(z=>z.id!==x.id&&z.u!==x.u)).slice(0,3);
+  return {kind:'u',label:'Какая величина измеряется в этих единицах?',big:fm(x.u),bigCls:'f',cls:'name',key,ref,
+    opts:shuffle([x,...others]).map(z=>({h:esc(z.name),ok:z.id===x.id}))};
+}
 const MK={f:qF,n:qN,b:qB};
-function make(it,mode){
+function make(key,mode){
+  if(key.startsWith('u:'))return qU(U.find(z=>'u:'+z.id===key));
+  const it=byId(key);
   const m=mode==='x'?['f','n','b'][Math.floor(Math.random()*3)]:mode;
-  return MK[m](it);
+  const q=MK[m](it); q.key=key; q.ref=refOf(key); return q;
 }
 function pick(ids,n){
   const pool=ids.map(id=>{
@@ -263,17 +307,22 @@ const S={screen:'home',sec:'all',mode:'x',qs:[],i:0,score:0,streak:0,ok:0,miss:[
 
 function start(mode,ids){
   S.mode=mode;
-  const pool=ids||F.filter(x=>S.sec==='all'||x.sec===S.sec).map(x=>x.id);
-  S.qs=shuffle(pick(pool,Math.min(N,pool.length))).map(id=>make(byId(id),mode));
+  const flt=x=>S.sec==='all'||x.sec===S.sec;
+  let keys=ids;
+  if(!keys){
+    const fk=F.filter(flt).map(x=>x.id), uk=U.filter(flt).map(x=>'u:'+x.id);
+    keys=mode==='u'?pick(uk,N):mode==='x'?[...pick(fk,7),...pick(uk,3)]:pick(fk,N);
+  }
+  S.qs=shuffle(keys).map(k=>make(k,mode));
   Object.assign(S,{screen:'quiz',i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]});
   render();
 }
 function answer(k){
   if(S.ans!==null)return;
-  const q=S.qs[S.i], good=q.opts[k].ok, st=store.st[q.it.id]=store.st[q.it.id]||{ok:0,bad:0};
+  const q=S.qs[S.i], good=q.opts[k].ok, st=store.st[q.key]=store.st[q.key]||{ok:0,bad:0};
   S.ans=k;
   if(good){S.ok++;S.streak++;S.score+=10+2*Math.min(S.streak-1,4);st.ok++}
-  else{S.streak=0;st.bad++;S.miss.push(q.it.id)}
+  else{S.streak=0;st.bad++;S.miss.push(q.key)}
   S.marks[S.i]=good;
   save(); render();
 }
@@ -287,7 +336,7 @@ function next(){
 
 /* ---------- экраны ---------- */
 function home(){
-  const bad=Object.entries(store.st).filter(([,v])=>v.bad>0).sort((a,b)=>b[1].bad-a[1].bad).slice(0,3).map(([id])=>byId(id));
+  const bad=Object.entries(store.st).filter(([,v])=>v.bad>0).sort((a,b)=>b[1].bad-a[1].bad).slice(0,3).map(([k])=>refOf(k)).filter(Boolean);
   return `
   <h1>Формулы наизусть</h1>
   <p class="lead">Физика: термодинамика и механика. Раунд — ${N} вопросов.</p>
@@ -300,7 +349,7 @@ function home(){
       <span class="b">${store.best[m.id]?'рекорд '+store.best[m.id]:''}</span></button>`).join('')}
   </div>
   <div class="links"><button class="link" data-act="sheet">Шпаргалка</button></div>
-  ${bad.length?`<div class="weak"><b>Чаще всего ошибаешься</b>${bad.map(x=>`<span>${fm(x.f)}</span>`).join('<br>')}</div>`:''}`;
+  ${bad.length?`<div class="weak"><b>Чаще всего ошибаешься</b>${bad.map(x=>`<span>${fm(x.short)}</span>`).join('<br>')}</div>`:''}`;
 }
 function quiz(){
   const q=S.qs[S.i], a=S.ans, done=a!==null;
@@ -315,9 +364,9 @@ function quiz(){
     const good=q.opts[a].ok;
     fb=`<div class="fb ${good?'ok':'bad'}" role="status">
       <h3>${good?'Верно':'Не так. Правильно:'}</h3>
-      <div class="nm">${esc(q.it.name)}</div>
-      <div class="fx">${fm(q.it.f)}</div>
-      <p>${esc(q.it.note)}</p></div>
+      <div class="nm">${esc(q.ref.name)}</div>
+      <div class="fx">${fm(q.ref.f)}</div>
+      <p>${esc(q.ref.note)}</p></div>
       <div class="dock"><button class="go" data-act="next">${S.i+1>=S.qs.length?'Результат':'Дальше'}</button></div>`;
   }
   return `
@@ -329,7 +378,7 @@ function quiz(){
 function result(){
   const n=S.qs.length, pct=Math.round(S.ok/n*100);
   const msg=pct===100?'Без единой ошибки.':pct>=80?'Почти всё помнишь.':pct>=50?'Неплохо, но ошибки стоит разобрать.':'Ещё раз пройди шпаргалку и повтори.';
-  const miss=[...new Set(S.miss)].map(byId);
+  const miss=[...new Set(S.miss)].map(refOf);
   return `<div class="res">
   <h2>${S.ok} из ${n}</h2><p class="sub">${msg}</p>
   <div class="stats"><div><b>${S.score}</b><span>очков</span></div><div><b>${pct}%</b><span>верно</span></div></div>
@@ -343,8 +392,10 @@ function result(){
 function sheet(){
   const grp=(k,t)=>`<h2>${t}</h2>`+F.filter(x=>x.sec===k).map(x=>`<div class="row">
     <div class="nm">${esc(x.name)}</div><div class="fx">${fm(x.f)}</div><div class="nt">${esc(x.note)}</div></div>`).join('');
+  const ug=(k,t)=>`<h2>${t}</h2>`+U.filter(x=>x.sec===k).map(x=>`<div class="row">
+    <div class="nm">${esc(x.name)}, ${fm(x.sym)}</div><div class="fx">${fm(x.u)}</div><div class="nt">${esc(x.note)}</div></div>`).join('');
   return `<div class="top"><button class="back" data-act="home">Назад</button></div>
-  <div class="sheet">${grp('t','Термодинамика')}${grp('m','Механика')}</div>`;
+  <div class="sheet">${grp('t','Термодинамика')}${grp('m','Механика')}${ug('t','Единицы: термодинамика')}${ug('m','Единицы: механика')}</div>`;
 }
 function render(){
   $('#app').innerHTML=({home,quiz,result,sheet})[S.screen]();
