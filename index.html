@@ -103,6 +103,12 @@ h1{font:700 40px/1.05 var(--serif);margin:28px 0 8px;letter-spacing:-.01em}
 .row .fx{font:400 22px/1.3 var(--serif)}
 .row .nt{font-size:13px;color:var(--ink2)}
 .sig{text-align:center;font-size:12px;color:var(--ink2);padding:0 16px calc(18px + env(safe-area-inset-bottom))}
+.cap{font-size:13px;color:var(--ink2);margin:0 0 6px}
+.cnt{flex:1;font-weight:600;color:var(--ink2)}
+.bar{flex:1;position:relative;height:22px;border:2px solid var(--ink);border-radius:4px;background:#fff;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:#c9d8f3;transition:width .2s}
+.bar span{position:relative;display:block;text-align:center;font-size:13px;line-height:18px;font-weight:600}
+.dock.two{display:grid;grid-template-columns:2fr 1fr;gap:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -303,57 +309,89 @@ function pick(ids,n){
 }
 
 /* ---------- состояние ---------- */
-const S={screen:'home',sec:'all',mode:'x',qs:[],i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]};
+const LENS=[10,20,40,0];
+const S={screen:'home',sec:'all',mode:'x',len:LENS.includes(store.len)?store.len:10,inf:false,done:0,qs:[],i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]};
 
-function start(mode,ids){
-  S.mode=mode;
+function fill(pool,n){
+  let out=[];
+  while(out.length<n&&pool.length)out=out.concat(pick(pool,Math.min(n-out.length,pool.length)));
+  return out;
+}
+function batch(mode,n){
   const flt=x=>S.sec==='all'||x.sec===S.sec;
-  let keys=ids;
-  if(!keys){
-    const fk=F.filter(flt).map(x=>x.id), uk=U.filter(flt).map(x=>'u:'+x.id);
-    keys=mode==='u'?pick(uk,N):mode==='x'?[...pick(fk,7),...pick(uk,3)]:pick(fk,N);
-  }
+  const fk=F.filter(flt).map(x=>x.id), uk=U.filter(flt).map(x=>'u:'+x.id);
+  if(mode==='u')return fill(uk,n);
+  if(mode==='x'){const a=Math.round(n*.7);return [...fill(fk,a),...fill(uk,n-a)]}
+  return fill(fk,n);
+}
+function start(mode,ids){
+  S.mode=mode; S.inf=!ids&&S.len===0;
+  const keys=ids||batch(mode,S.len===0?10:S.len);
   S.qs=shuffle(keys).map(k=>make(k,mode));
-  Object.assign(S,{screen:'quiz',i:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]});
+  Object.assign(S,{screen:'quiz',i:0,done:0,score:0,streak:0,ok:0,miss:[],ans:null,marks:[]});
   render();
 }
 function answer(k){
   if(S.ans!==null)return;
   const q=S.qs[S.i], good=q.opts[k].ok, st=store.st[q.key]=store.st[q.key]||{ok:0,bad:0};
-  S.ans=k;
+  S.ans=k; S.done++;
   if(good){S.ok++;S.streak++;S.score+=10+2*Math.min(S.streak-1,4);st.ok++}
   else{S.streak=0;st.bad++;S.miss.push(q.key)}
   S.marks[S.i]=good;
   save(); render();
 }
+function finish(){
+  const k=S.mode+':'+S.len;
+  if(S.score>(store.best[k]||0))store.best[k]=S.score;
+  save(); S.screen='result';
+}
+function stop(){
+  if(!S.done){S.screen='home'}else finish();
+  render(); window.scrollTo(0,0);
+}
 function next(){
   if(S.i+1>=S.qs.length){
-    const b=store.best[S.mode]||0; if(S.score>b)store.best[S.mode]=S.score; save();
-    S.screen='result';
+    if(S.inf){
+      const last=S.qs[S.qs.length-1].key;
+      const ks=shuffle(batch(S.mode,10));
+      if(ks[0]===last&&ks.length>1)ks.push(ks.shift());
+      S.qs.push(...ks.map(k=>make(k,S.mode)));
+      S.i++;S.ans=null;
+    }else finish();
   }else{S.i++;S.ans=null}
   render(); window.scrollTo(0,0);
 }
 
 /* ---------- экраны ---------- */
+const bestOf=m=>store.best[m+':'+S.len]||(S.len===10?store.best[m]:0)||0;
 function home(){
   const bad=Object.entries(store.st).filter(([,v])=>v.bad>0).sort((a,b)=>b[1].bad-a[1].bad).slice(0,3).map(([k])=>refOf(k)).filter(Boolean);
   return `
   <h1>Формулы наизусть</h1>
-  <p class="lead">Физика: термодинамика и механика. Раунд — ${N} вопросов.</p>
+  <p class="lead">Физика: термодинамика и механика.</p>
+  <div class="cap">Раздел</div>
   <div class="seg" role="group" aria-label="Раздел">
     ${Object.entries(SEC).map(([k,v])=>`<button data-act="sec" data-v="${k}" aria-pressed="${S.sec===k}">${v}</button>`).join('')}
+  </div>
+  <div class="cap">Вопросов в раунде</div>
+  <div class="seg" role="group" aria-label="Вопросов в раунде">
+    ${LENS.map(n=>`<button data-act="len" data-v="${n}" aria-pressed="${S.len===n}" ${n===0?'aria-label="Без ограничения, пока не нажмёшь стоп"':''}>${n||'∞'}</button>`).join('')}
   </div>
   <div class="modes">
     ${MODES.map(m=>`<button class="mode" data-act="play" data-v="${m.id}">
       <span><span class="t">${m.t}</span><span class="d">${m.d}</span></span>
-      <span class="b">${store.best[m.id]?'рекорд '+store.best[m.id]:''}</span></button>`).join('')}
+      <span class="b">${bestOf(m.id)?'рекорд '+bestOf(m.id):''}</span></button>`).join('')}
   </div>
   <div class="links"><button class="link" data-act="sheet">Шпаргалка</button></div>
   ${bad.length?`<div class="weak"><b>Чаще всего ошибаешься</b>${bad.map(x=>`<span>${fm(x.short)}</span>`).join('<br>')}</div>`:''}`;
 }
 function quiz(){
   const q=S.qs[S.i], a=S.ans, done=a!==null;
-  const ticks=S.qs.map((_,i)=>`<i class="${i<S.i||(i===S.i&&done)?(S.marks[i]?'ok':'bad'):i===S.i?'cur':''}"></i>`).join('');
+  const total=S.qs.length, fin=done?S.i+1:S.i;
+  let prog;
+  if(S.inf)prog=`<div class="cnt">Вопрос ${S.i+1}</div>`;
+  else if(total<=20)prog=`<div class="ticks">${S.qs.map((_,i)=>`<i class="${i<S.i||(i===S.i&&done)?(S.marks[i]?'ok':'bad'):i===S.i?'cur':''}"></i>`).join('')}</div>`;
+  else prog=`<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${fin}"><i style="width:${fin/total*100}%"></i><span>${S.i+1} / ${total}</span></div>`;
   const opts=q.opts.map((o,k)=>{
     let c='opt '+q.cls;
     if(done){ if(o.ok)c+=' right'; else if(k===a)c+=' wrong'; else c+=' dim'; }
@@ -367,16 +405,16 @@ function quiz(){
       <div class="nm">${esc(q.ref.name)}</div>
       <div class="fx">${fm(q.ref.f)}</div>
       <p>${esc(q.ref.note)}</p></div>
-      <div class="dock"><button class="go" data-act="next">${S.i+1>=S.qs.length?'Результат':'Дальше'}</button></div>`;
+      <div class="dock ${S.inf?'two':''}"><button class="go" data-act="next">${!S.inf&&S.i+1>=S.qs.length?'Результат':'Дальше'}</button>${S.inf?'<button class="go alt" data-act="stop">Стоп</button>':''}</div>`;
   }
   return `
-  <div class="top"><button class="back" data-act="home">Выйти</button><div class="ticks">${ticks}</div><div class="score">${S.score}</div></div>
+  <div class="top"><button class="back" data-act="${S.inf?'stop':'home'}">${S.inf?'Стоп':'Выйти'}</button>${prog}<div class="score">${S.score}</div></div>
   <div class="streak">${S.streak>1?'Серия: '+S.streak:''}</div>
   <div class="prompt"><div class="q">${q.label}</div><div class="big ${q.bigCls}">${done&&q.kind==='b'?q.big.replace('<span class="gap" id="gap">?</span>',`<span class="gap ok">${q.ans}</span>`):q.big}</div></div>
   <div class="opts ${q.cls.includes('two')?'two':''}">${opts}</div>${fb}`;
 }
 function result(){
-  const n=S.qs.length, pct=Math.round(S.ok/n*100);
+  const n=S.done, pct=n?Math.round(S.ok/n*100):0;
   const msg=pct===100?'Без единой ошибки.':pct>=80?'Почти всё помнишь.':pct>=50?'Неплохо, но ошибки стоит разобрать.':'Ещё раз пройди шпаргалку и повтори.';
   const miss=[...new Set(S.miss)].map(refOf);
   return `<div class="res">
@@ -406,6 +444,8 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]'); if(!b)return;
   const a=b.dataset.act,v=b.dataset.v;
   if(a==='sec'){S.sec=v;render()}
+  else if(a==='len'){S.len=+v;store.len=S.len;save();render()}
+  else if(a==='stop')stop();
   else if(a==='play')start(v);
   else if(a==='ans')answer(+v);
   else if(a==='next')next();
