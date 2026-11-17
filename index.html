@@ -81,8 +81,7 @@ function menu(){xp=0;
   const row=(k,name,ws)=>{const m=ws.filter(w=>sc(w)>=3).length;
     const pct=(ws.reduce((a,w)=>a+Math.min(sc(w),3),0)/(ws.length*3)*100).toFixed(1);
     return `<button class="deck" onclick="start('${k}')"><b>${name}</b><div style="color:var(--mut)">выучено ${m} из ${ws.length}</div><div class="bar"><i style="width:${pct}%"></i></div></button>`};
-  $.innerHTML=`<h1>📚 Слова к паре</h1><div class="sub">Чем лучше знаешь слово, тем ближе задания к зачёту: сначала выбор, потом письменно.</div>
-  ${stOK?"":`<div class="sub" style="color:var(--r)">⚠️ Браузер не даёт сохранить прогресс: после закрытия страницы он обнулится.</div>`}
+  $.innerHTML=`${stOK?"":`<div class="sub" style="color:var(--r)">⚠️ Браузер не даёт сохранить прогресс: после закрытия страницы он обнулится.</div>`}
   <button class="deck" style="border-color:var(--b)" onclick="startTest()"><b>📝 Пробный зачёт</b><div style="color:var(--mut)">30 заданий как на настоящем: перевод на русский, на английский, пропущенные буквы</div></button>`+
   (()=>{const n=misN();return `<button class="deck" style="border-color:var(--r)" onclick="start('mistakes')"${n?"":" disabled"}><b>🔁 Повторение ошибок</b><div style="color:var(--mut)">${n?`${n} ${plural(n,"слово","слова","слов")} на повторение · слово уходит из списка, когда ответишь верно`:"пока пусто — ошибок нет"}</div></button>`})()+
   Object.keys(D).map(k=>row(k,D[k].name,D[k].w)).join("")+row("all","Всё вместе",ALL);
