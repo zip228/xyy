@@ -14,6 +14,7 @@ h1{font-size:24px;text-align:center;margin:8px 0 4px}
 .sub{text-align:center;color:var(--mut);margin-bottom:16px}
 .deck{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--bd);border-bottom-width:4px;border-radius:16px;padding:14px;margin:10px 0;color:var(--fg);font:inherit;cursor:pointer}
 .deck b{font-size:19px}
+.deck[disabled]{opacity:.55;cursor:default}
 .bar{height:10px;background:var(--bd);border-radius:6px;margin-top:8px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--g)}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -48,6 +49,14 @@ const ALL=Object.values(D).flatMap(d=>d.w);
 let P={},stOK=true;try{P=JSON.parse(localStorage.getItem("wg2")||"{}");localStorage.setItem("wg2",JSON.stringify(P))}catch(e){stOK=false}
 const save=()=>{try{localStorage.setItem("wg2",JSON.stringify(P))}catch(e){stOK=false}};
 const kk=w=>w.en+"|"+w.ru, sc=w=>P[kk(w)]||0;
+let WM={};try{WM=JSON.parse(localStorage.getItem("wg2m")||"{}")}catch(e){stOK=false}
+const wsave=()=>{try{localStorage.setItem("wg2m",JSON.stringify(WM))}catch(e){stOK=false}};
+const BYKEY=new Map(ALL.map(w=>[kk(w),w]));
+const misAdd=w=>{const e=WM[kk(w)]=WM[kk(w)]||{en:w.en,ru:w.ru,k:w.k,n:0};e.n++;wsave()};
+const misOk=w=>{const e=WM[kk(w)];if(!e)return;if(--e.n<=0)delete WM[kk(w)];wsave()};
+const misWords=()=>Object.keys(WM).map(k=>BYKEY.get(k)||WM[k]).filter(Boolean);
+const misN=()=>Object.keys(WM).length;
+const plural=(n,a,b,c)=>{const d=n%10,h=n%100;return d==1&&h!=11?a:d>=2&&d<=4&&(h<10||h>=20)?b:c};
 const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const $=document.getElementById("app");
@@ -66,7 +75,7 @@ function gapOf(w){const s=w.en,idx=[];for(let i=1;i<s.length;i++)if(/[a-z]/i.tes
   return [...s].map((c,i)=>c==" "?"\u00a0":(p.has(i)?"_":c)).join(" ")}
 function mode(w){const s=sc(w);const m=s<1?["en2ru","ru2en"]:s<3?["ru2en","en2ruT","gap","type"]:["type","en2ruT","gap","type"];
   const r=m[Math.floor(Math.random()*m.length)];return r=="gap"&&!gapOk(w)?"type":r}
-let pool=ALL,q=[],total=1,done=0,xp=0,cur,locked,lastK="all",T,wrongW=[];
+let pool=ALL,q=[],total=1,done=0,xp=0,cur,locked,lastK="all",T;
 
 function menu(){xp=0;
   const row=(k,name,ws)=>{const m=ws.filter(w=>sc(w)>=3).length;
@@ -75,11 +84,12 @@ function menu(){xp=0;
   $.innerHTML=`<h1>📚 Слова к паре</h1><div class="sub">Чем лучше знаешь слово, тем ближе задания к зачёту: сначала выбор, потом письменно.</div>
   ${stOK?"":`<div class="sub" style="color:var(--r)">⚠️ Браузер не даёт сохранить прогресс: после закрытия страницы он обнулится.</div>`}
   <button class="deck" style="border-color:var(--b)" onclick="startTest()"><b>📝 Пробный зачёт</b><div style="color:var(--mut)">30 заданий как на настоящем: перевод на русский, на английский, пропущенные буквы</div></button>`+
+  (()=>{const n=misN();return `<button class="deck" style="border-color:var(--r)" onclick="start('mistakes')"${n?"":" disabled"}><b>🔁 Повторение ошибок</b><div style="color:var(--mut)">${n?`${n} ${plural(n,"слово","слова","слов")} на повторение · слово уходит из списка, когда ответишь верно`:"пока пусто — ошибок нет"}</div></button>`})()+
   Object.keys(D).map(k=>row(k,D[k].name,D[k].w)).join("")+row("all","Всё вместе",ALL);
 }
 function begin(ws){q=sh(ws).map(w=>({w,m:mode(w)}));total=q.length;done=0;next()}
-function start(k){lastK=k;pool=k=="all"?ALL:D[k].w;begin(sh(pool).sort((a,b)=>sc(a)-sc(b)).slice(0,10))}
-function retry(){lastK="all";pool=ALL;begin(wrongW.slice(0,15))}
+function start(k){lastK=k;if(k=="mistakes"){pool=misWords();return pool.length?begin(sh(pool).slice(0,15)):menu()}pool=k=="all"?ALL:D[k].w;begin(sh(pool).sort((a,b)=>sc(a)-sc(b)).slice(0,10))}
+function retry(){start("mistakes")}
 function hdr(){return `<div class="top"><button class="x" onclick="menu()">✕</button><div class="bar"><i style="width:${done/total*100}%"></i></div><b>⭐ ${xp}</b></div>`}
 function next(){
   if(!q.length)return end();
@@ -100,8 +110,8 @@ function checkT(){if(locked)return next();const i=document.getElementById("in");
 function choose(b,ok){if(locked)return;[...document.querySelectorAll(".opt")].forEach((x,i)=>{x.disabled=true;if(i==cur.ci)x.classList.add("ok")});if(!ok)b.classList.add("bad");result(ok)}
 function result(ok){
   locked=true;const w=cur.w,typed=["type","en2ruT","gap"].includes(cur.m);
-  if(ok){P[kk(w)]=sc(w)+(typed?1:.5);xp+=typed?15:10;done++;q.shift()}
-  else{P[kk(w)]=Math.max(0,sc(w)-1);q.shift();q.push({w,m:mode(w)})}
+  if(ok){P[kk(w)]=sc(w)+(typed?1:.5);xp+=typed?15:10;done++;q.shift();misOk(w)}
+  else{P[kk(w)]=Math.max(0,sc(w)-1);q.shift();q.push({w,m:mode(w)});misAdd(w)}
   save();
   document.getElementById("fb").innerHTML=`<div class="fb ${ok?"ok":"bad"}"><b>${ok?"Верно! 🎉":"Правильно:"}</b> ${esc(ART(w))} — ${esc(w.ru)}</div>`;
   const c=document.getElementById("ch");
@@ -125,8 +135,8 @@ function tSub(){T.ans.push(document.getElementById("in").value);T.i++;tNext()}
 function tEnd(){
   const res=T.items.map((it,i)=>({w:it.w,a:T.ans[i],ok:(it.m=="en2ruT"?okRu:okEn)(T.ans[i],it.w)}));
   const s=[0,1,2].map(n=>res.slice(n*10,n*10+10).filter(r=>r.ok).length),tot=s[0]+s[1]+s[2];
-  res.forEach(r=>{P[kk(r.w)]=r.ok?sc(r.w)+1:Math.max(0,sc(r.w)-1)});save();
-  const bad=res.filter(r=>!r.ok);wrongW=bad.map(r=>r.w);
+  res.forEach(r=>{P[kk(r.w)]=r.ok?sc(r.w)+1:Math.max(0,sc(r.w)-1);r.ok?misOk(r.w):misAdd(r.w)});save();
+  const bad=res.filter(r=>!r.ok);
   $.innerHTML=`<div class="big">${tot>=26?"🏆":tot>=20?"👍":"💪"}</div><h1>${tot} / 30</h1><div class="stats">RU: ${s[0]}/10 · EN: ${s[1]}/10 · буквы: ${s[2]}/10</div>`+
    (bad.length?`<div class="q" style="margin-top:16px">Ошибки</div>`+bad.map(r=>`<div class="row">${esc(ART(r.w))} — ${esc(r.w.ru)}<br><span>твой ответ: ${esc(r.a.trim()||"—")}</span></div>`).join(""):"")+
    (bad.length?`<button class="btn" onclick="retry()">ПОВТОРИТЬ ОШИБКИ</button>`:"")+`<button class="btn sec" onclick="startTest()">НОВЫЙ ЗАЧЁТ</button><button class="btn sec" onclick="menu()">В МЕНЮ</button>`;
